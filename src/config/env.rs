@@ -4,7 +4,7 @@ use std::env;
 
 pub struct Env {
     pub host_url: String,
-    pub host_port: u128,
+    pub host_port: u16,
 }
 
 #[derive(Display)]
@@ -27,7 +27,7 @@ impl Env {
             env::var("HOST_URL").map_err(|_| EnvError::NoEnvVar("HOST_URL".to_string()))?;
         let host_port = env::var("HOST_PORT")
             .map_err(|_| EnvError::NoEnvVar("HOST_PORT".to_string()))?
-            .parse::<u128>()
+            .parse::<u16>()
             .map_err(|_| EnvError::InvalidEnvVarType("HOST_PORT".to_string()))?;
 
         Ok(Env {
