@@ -1,9 +1,13 @@
+mod app;
 mod config;
 
+use actix_web::{web, App, HttpServer};
+use app::root;
 use config::env;
-use std::process;
+use std::{io, process};
 
-fn main() {
+#[actix_web::main]
+async fn main() -> io::Result<()> {
     let config = match env::Env::from_env() {
         Ok(config) => {
             println!("Configuration file loaded successfully");
@@ -11,7 +15,7 @@ fn main() {
         }
         Err(err) => {
             println!("Error when loading configuration file: {}", err);
-            process::exit(1)
+            process::exit(1);
         }
     };
 
@@ -20,5 +24,8 @@ fn main() {
         config.host_url, config.host_port
     );
 
-    println!("Hello, world!");
+    HttpServer::new(|| App::new().service(web::scope("/auth").route("", web::get().to(root::get))))
+        .bind((config.host_url.as_str(), config.host_port))?
+        .run()
+        .await
 }
