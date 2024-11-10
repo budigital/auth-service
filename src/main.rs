@@ -1,7 +1,7 @@
 mod app;
 mod config;
 
-use actix_web::{web, App, HttpServer};
+use actix_web::{middleware, web, App, HttpServer};
 use app::root;
 use config::env;
 use std::{io, process};
@@ -24,8 +24,12 @@ async fn main() -> io::Result<()> {
         config.host_url, config.host_port
     );
 
-    HttpServer::new(|| App::new().service(web::scope("/auth").route("", web::get().to(root::get))))
-        .bind((config.host_url.as_str(), config.host_port))?
-        .run()
-        .await
+    HttpServer::new(|| {
+        App::new()
+            .wrap(middleware::NormalizePath::default())
+            .service(web::scope("/auth").route("", web::get().to(root::get)))
+    })
+    .bind((config.host_url.as_str(), config.host_port))?
+    .run()
+    .await
 }
