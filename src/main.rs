@@ -29,7 +29,7 @@ async fn main() -> io::Result<()> {
             .wrap(middleware::NormalizePath::default())
             .service(web::scope("/auth").route("", web::get().to(root::get)))
     })
-    .bind((config.host_url.as_str(), config.host_port))?
+    .bind((config.host_url, config.host_port))?
     .run()
     .await
 }
