@@ -1,20 +1,32 @@
 mod app;
 mod config;
+mod utils;
 
-use actix_web::{middleware, web, App, HttpServer};
+use actix_web::{
+    middleware::{Logger, NormalizePath, TrailingSlash},
+    web, App, HttpServer,
+};
 use app::root;
 use config::env;
 use std::{io, process};
+use utils::logger;
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
+    logger::init_logger();
+
     let config = match env::Env::from_env() {
         Ok(config) => {
-            println!("Configuration file loaded successfully");
+            logger::log(
+                logger::LoggerLevel::Info,
+                "Configuration file loaded successfully",
+            );
             config
         }
         Err(err) => {
-            println!("Error when loading configuration file: {}", err);
+            let err_message = format!("Error when loading configuration file: {}", err);
+
+            logger::log(logger::LoggerLevel::Error, &err_message);
             process::exit(1);
         }
     };
@@ -26,7 +38,8 @@ async fn main() -> io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .wrap(middleware::NormalizePath::default())
+            .wrap(NormalizePath::new(TrailingSlash::Trim))
+            .wrap(Logger::default())
             .service(web::scope("/auth").route("", web::get().to(root::get)))
     })
     .bind((config.host_url, config.host_port))?
