@@ -6,7 +6,7 @@ use actix_web::{
     middleware::{Logger, NormalizePath, TrailingSlash},
     web, App, HttpServer,
 };
-use app::root;
+use app::{healthcheck, root};
 use config::env;
 use std::{io, process};
 use utils::logger;
@@ -40,7 +40,11 @@ async fn main() -> io::Result<()> {
         App::new()
             .wrap(NormalizePath::new(TrailingSlash::Trim))
             .wrap(Logger::default())
-            .service(web::scope("/auth").route("", web::get().to(root::get)))
+            .service(
+                web::scope("/auth")
+                    .route("", web::get().to(root::get))
+                    .route("/healthcheck", web::get().to(healthcheck::get)),
+            )
     })
     .bind((config.host_url, config.host_port))?
     .run()
