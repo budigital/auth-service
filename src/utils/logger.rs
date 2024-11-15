@@ -1,6 +1,7 @@
 use env_logger::{init_from_env, Env};
 use log::{error, info, warn};
 
+#[allow(dead_code)]
 pub enum LoggerLevel {
     Info,
     Warn,
